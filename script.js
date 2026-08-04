@@ -43,13 +43,16 @@ window.addEventListener("orientationchange", updateDeviceInfo);
    STARTUP LOGO -> HEADER
    ====================================== */
 
+let block1Ready = false;
+
 window.addEventListener("load", () => {
   setTimeout(() => {
     header?.classList.add("loaded");
   }, 250);
 
   setTimeout(() => {
-    titleBlock?.classList.add("title-visible");
+    block1Ready = true;
+    updateBlock1Visibility();
   }, 980);
 });
 
@@ -101,24 +104,75 @@ window.addEventListener("scroll", () => {
 function updateBlock1Visibility() {
   if (!homeBlock || !titleBlock) return;
 
-  const rect = homeBlock.getBoundingClientRect();
-  const vh = window.innerHeight || document.documentElement.clientHeight;
-
-  const visibleEnough =
-    rect.bottom > vh * 0.42 &&
-    rect.top < vh * 0.58;
-
-  if (visibleEnough) {
-    titleBlock.classList.add("title-visible");
-    titleBlock.classList.remove("title-hidden");
-  } else {
-    titleBlock.classList.remove("title-visible");
-    titleBlock.classList.add("title-hidden");
+  /*
+    Before the startup animation finishes,
+    keep the title hidden.
+  */
+  if (!block1Ready) {
+    titleBlock.style.opacity = "0";
+    titleBlock.style.transform = "translateY(30px)";
+    return;
   }
+
+  const rect = homeBlock.getBoundingClientRect();
+  const vh =
+    window.innerHeight ||
+    document.documentElement.clientHeight;
+
+  /*
+    Fade range:
+      top of page        -> fully visible
+      ~12% viewport down -> starts fading
+      ~48% viewport down -> fully hidden
+
+    Because this is calculated directly from scroll
+    position, scrolling upward automatically reverses
+    the exact same animation.
+  */
+  const fadeStart = vh * 0.12;
+  const fadeEnd = vh * 0.48;
+
+  const scrolledPastTop =
+    Math.max(0, -rect.top);
+
+  const progress =
+    Math.min(
+      1,
+      Math.max(
+        0,
+        (scrolledPastTop - fadeStart) /
+        (fadeEnd - fadeStart)
+      )
+    );
+
+  const opacity =
+    1 - progress;
+
+  const translateY =
+    -32 * progress;
+
+  titleBlock.style.opacity =
+    opacity.toFixed(3);
+
+  titleBlock.style.transform =
+    `translateY(${translateY.toFixed(2)}px)`;
 }
 
-window.addEventListener("scroll", updateBlock1Visibility, { passive: true });
-window.addEventListener("resize", updateBlock1Visibility);
+window.addEventListener(
+  "scroll",
+  updateBlock1Visibility,
+  { passive: true }
+);
+
+window.addEventListener(
+  "resize",
+  updateBlock1Visibility
+);
+
+window.addEventListener(
+  "orientationchange",
+  updateBlock1Visibility
+);
 
 /* ======================================
    BLOCK 2 MEDIA LIBRARY
@@ -140,6 +194,35 @@ function shuffleArray(array) {
   return shuffled;
 }
 
+function createMediaFrame(media) {
+  const frame = document.createElement("div");
+  frame.className = "media-frame";
+
+  let element;
+
+  if (media.type === "video") {
+    element = document.createElement("video");
+    element.autoplay = true;
+    element.muted = true;
+    element.loop = true;
+    element.playsInline = true;
+  } else {
+    element = document.createElement("img");
+    element.alt = "";
+  }
+
+  element.src = media.src;
+  element.style.objectPosition =
+    media.position || "50% 50%";
+  element.style.transform =
+    `scale(${media.scale || 1})`;
+
+  frame.appendChild(element);
+
+  return frame;
+}
+
+
 function buildSlideshow() {
   const tracks = [
     document.getElementById("picture-track-1"),
@@ -154,14 +237,17 @@ function buildSlideshow() {
     track.style.removeProperty("--loop-distance");
   });
 
-  const randomizedMedia = shuffleArray(slideshowMedia);
-  const guaranteedRows = shuffleArray([0, 1, 2]);
+  const randomizedMedia =
+    shuffleArray(slideshowMedia);
 
-  const rowSets = tracks.map(() => {
-    const set = document.createElement("div");
-    set.className = "picture-track-set";
-    return set;
-  });
+  const guaranteedRows =
+    shuffleArray([0, 1, 2]);
+
+  /*
+    Keep the random-row behavior, but first
+    build a clean media list for each row.
+  */
+  const rowMedia = [[], [], []];
 
   randomizedMedia.forEach((media, index) => {
     const rowIndex =
@@ -169,81 +255,134 @@ function buildSlideshow() {
         ? guaranteedRows[index]
         : Math.floor(Math.random() * 3);
 
-    const frame = document.createElement("div");
-    frame.className = "media-frame";
-
-    let element;
-
-    if (media.type === "video") {
-      element = document.createElement("video");
-      element.autoplay = true;
-      element.muted = true;
-      element.loop = true;
-      element.playsInline = true;
-    } else {
-      element = document.createElement("img");
-      element.alt = "";
-    }
-
-    element.src = media.src;
-    element.style.objectPosition = media.position || "50% 50%";
-    element.style.transform = `scale(${media.scale || 1})`;
-
-    frame.appendChild(element);
-    rowSets[rowIndex].appendChild(frame);
+    rowMedia[rowIndex].push(media);
   });
 
-  tracks.forEach((track, index) => {
-    const sourceSet = rowSets[index];
-    if (!sourceSet.children.length) return;
+  tracks.forEach((track, rowIndex) => {
+    const items = rowMedia[rowIndex];
 
-    const duplicateSet = sourceSet.cloneNode(true);
-    duplicateSet.setAttribute("aria-hidden", "true");
+    if (!items.length) return;
 
-    track.append(sourceSet, duplicateSet);
+    const sourceSet =
+      document.createElement("div");
 
-    requestAnimationFrame(() => {
-      const loopDistance =
-        sourceSet.getBoundingClientRect().width;
+    sourceSet.className =
+      "picture-track-set";
 
-      track.style.setProperty(
-        "--loop-distance",
-        `${loopDistance}px`
+    /*
+      Add the row's randomized media once.
+    */
+    items.forEach(media => {
+      sourceSet.appendChild(
+        createMediaFrame(media)
       );
     });
+
+    track.appendChild(sourceSet);
+
+    /*
+      On sparse rows (for example only one source
+      image), repeat that row's own sequence until
+      ONE source set is wider than the visible row.
+
+      This prevents:
+      - large empty gaps
+      - stacked-looking repeated boxes
+      - visible jump/reset at the loop seam
+    */
+    const fillSourceSet = () => {
+      const visibleWidth =
+        track.parentElement
+          ?.getBoundingClientRect()
+          .width || window.innerWidth;
+
+      const targetWidth =
+        visibleWidth * 1.35;
+
+      let safety = 0;
+
+      while (
+        sourceSet.getBoundingClientRect().width <
+          targetWidth &&
+        safety < 30
+      ) {
+        items.forEach(media => {
+          sourceSet.appendChild(
+            createMediaFrame(media)
+          );
+        });
+
+        safety++;
+      }
+
+      /*
+        Clone the now-complete source set exactly once.
+        The second set begins immediately after the first,
+        making the animation mathematically seamless.
+      */
+      const duplicateSet =
+        sourceSet.cloneNode(true);
+
+      duplicateSet.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+      track.appendChild(
+        duplicateSet
+      );
+
+      requestAnimationFrame(() => {
+        const loopDistance =
+          sourceSet.getBoundingClientRect().width;
+
+        track.style.setProperty(
+          "--loop-distance",
+          `${loopDistance}px`
+        );
+      });
+    };
+
+    /*
+      Wait one frame so frame dimensions are real
+      before deciding how many copies are needed.
+    */
+    requestAnimationFrame(
+      fillSourceSet
+    );
   });
 }
+
+
+function rebuildSlideshow() {
+  buildSlideshow();
+}
+
 
 buildSlideshow();
 
-function refreshSlideshowLoopDistances() {
-  document
-    .querySelectorAll(".picture-track")
-    .forEach(track => {
-      const firstSet =
-        track.querySelector(".picture-track-set");
 
-      if (!firstSet) return;
+let slideshowResizeTimer;
 
-      track.style.setProperty(
-        "--loop-distance",
-        `${firstSet.getBoundingClientRect().width}px`
-      );
-    });
+function scheduleSlideshowRebuild() {
+  clearTimeout(slideshowResizeTimer);
+
+  slideshowResizeTimer =
+    setTimeout(
+      rebuildSlideshow,
+      180
+    );
 }
+
 
 window.addEventListener(
   "resize",
-  () => requestAnimationFrame(
-    refreshSlideshowLoopDistances
-  )
+  scheduleSlideshowRebuild
 );
 
 window.addEventListener(
   "orientationchange",
-  () => requestAnimationFrame(
-    refreshSlideshowLoopDistances
-  )
+  scheduleSlideshowRebuild
 );
 
 /* ======================================

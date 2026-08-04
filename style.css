@@ -11,10 +11,22 @@
   --menu-height: clamp(54px, 7vw, 66px);
   --menu-background: linear-gradient(90deg, #f5f1e8, #e8ded2, #f3eadc);
   --menu-border: rgba(35, 30, 25, 0.18);
-  /* LOGO SIZING — EDIT HERE */
-  --startup-logo-width: clamp(220px, 58vw, 560px);
-  --startup-logo-height: clamp(160px, 44vh, 400px);
-  --header-logo-size: calc(var(--menu-height) - 4px);
+  /* LOGO SIZING — EDIT HERE
+     SVG canvas: 792 x 612
+     Actual BLACK artwork: ~460 x 275
+     White SVG artwork is removed in the SVG file itself.
+  */
+  --startup-logo-width: clamp(300px, 78vw, 760px);
+  --startup-logo-height: clamp(230px, 58vh, 590px);
+
+  /*
+    Make the actual BLACK drawing nearly fill the menu height.
+    Because the black drawing only uses ~44.93% of the SVG canvas height,
+    the SVG element itself must be ~2.225x taller than the desired visible logo.
+  */
+  --header-logo-visible-height: calc(var(--menu-height) - 4px);
+  --header-logo-box-height: calc(var(--header-logo-visible-height) * 2.2255);
+  --header-logo-box-width: calc(var(--header-logo-visible-height) * 2.880);
   --hamburger-width: 32px;
   --hamburger-thickness: 3px;
   --hamburger-gap: 7px;
@@ -183,8 +195,14 @@ a { font-family: "Times New Roman", Times, serif; }
 }
 
 #site-header.loaded #site-logo {
-  width: var(--header-logo-size);
-  height: var(--header-logo-size);
+  width: var(--header-logo-box-width);
+  height: var(--header-logo-box-height);
+
+  /*
+    The black artwork is slightly below the SVG canvas center,
+    so lift it a touch for optical centering in the menu.
+  */
+  transform: translateY(-2px);
 }
 
 /* HAMBURGER */
@@ -310,20 +328,10 @@ a { font-family: "Times New Roman", Times, serif; }
   transform: translateY(30px);
 
   transition:
-    opacity 650ms ease,
-    transform 650ms ease;
+    opacity 180ms linear,
+    transform 180ms linear;
 
   will-change: opacity, transform;
-}
-
-.title-block.title-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.title-block.title-hidden {
-  opacity: 0;
-  transform: translateY(-32px);
 }
 
 .main-title {
@@ -395,18 +403,30 @@ a { font-family: "Times New Roman", Times, serif; }
   );
 
   width: max-content;
+  min-width: max-content;
+
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
+
   gap: 0;
+
   will-change: transform;
 }
 
 .picture-track-set {
   height: 100%;
+  width: max-content;
+  min-width: max-content;
+
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
+
   gap: var(--slideshow-picture-gap);
-  flex-shrink: 0;
+
+  flex: 0 0 auto;
+
   padding-right: var(--slideshow-picture-gap);
 }
 
@@ -415,6 +435,7 @@ a { font-family: "Times New Roman", Times, serif; }
 .row-3 .picture-track { animation: slideshow-left var(--row-3-speed) linear infinite; }
 
 .media-frame {
+  flex: 0 0 auto;
   height: 100%;
   aspect-ratio: var(--media-aspect-ratio);
   flex-shrink: 0;
@@ -541,12 +562,19 @@ a { font-family: "Times New Roman", Times, serif; }
   stroke: var(--electric-blue) !important;
   stroke-width: var(--electric-glow-width);
   opacity: 0;
+
   stroke-dasharray: 7 93;
   stroke-dashoffset: 100;
-  filter: blur(var(--electric-glow-blur)) drop-shadow(0 0 10px var(--electric-blue));
+
+  filter:
+    blur(var(--electric-glow-blur))
+    drop-shadow(0 0 10px var(--electric-blue));
+
   animation:
-    electric-run-cycle var(--electric-loop-time) linear infinite,
-    electric-glow-pulse 320ms ease-in-out infinite;
+    electric-run-cycle
+    var(--electric-loop-time)
+    linear
+    infinite;
 }
 
 #electric-art .electric-core {
@@ -571,45 +599,107 @@ a { font-family: "Times New Roman", Times, serif; }
   animation: electric-warm-cycle var(--electric-loop-time) linear infinite;
 }
 
+
 @keyframes electric-run-cycle {
-  0% { opacity: 0; stroke-dashoffset: 100; }
-  2% { opacity: 1; }
-  65% { opacity: 1; stroke-dashoffset: 0; }
-  74% { opacity: .8; }
-  84%, 100% { opacity: 0; stroke-dashoffset: 0; }
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 100;
+  }
+
+  2% {
+    opacity: 1;
+  }
+
+  68% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  76% {
+    opacity: 0.55;
+  }
+
+  86%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
 }
 
 @keyframes electric-trail-cycle {
-  0% { opacity: 0; stroke-dashoffset: 100; }
-  3% { opacity: var(--electric-trail-opacity); }
-  65% { opacity: var(--electric-trail-opacity); stroke-dashoffset: 0; }
-  74% { opacity: .48; }
-  86%, 100% { opacity: 0; stroke-dashoffset: 0; }
-}
-
-@keyframes electric-glow-pulse {
-  0%, 100% {
-    filter: blur(var(--electric-glow-blur)) drop-shadow(0 0 5px var(--electric-blue));
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 100;
   }
-  50% {
-    filter:
-      blur(calc(var(--electric-glow-blur) * 1.35))
-      drop-shadow(0 0 14px var(--electric-blue))
-      drop-shadow(0 0 6px var(--electric-white));
+
+  3% {
+    opacity: var(--electric-trail-opacity);
+  }
+
+  68% {
+    opacity: var(--electric-trail-opacity);
+    stroke-dashoffset: 0;
+  }
+
+  78% {
+    opacity: var(--electric-trail-opacity);
+  }
+
+  90%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
   }
 }
 
 @keyframes electric-warm-cycle {
-  0% { opacity: 0; stroke-dashoffset: 100; }
-  8% { opacity: .95; stroke: var(--electric-yellow) !important; }
-  15% { opacity: .12; }
-  24% { opacity: .9; stroke: var(--electric-orange) !important; }
-  34% { opacity: .08; }
-  46% { opacity: .85; stroke: var(--electric-yellow) !important; }
-  58% { opacity: .15; }
-  65% { opacity: .9; stroke: var(--electric-orange) !important; stroke-dashoffset: 0; }
-  78% { opacity: .12; }
-  86%, 100% { opacity: 0; stroke-dashoffset: 0; }
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 100;
+  }
+
+  8% {
+    opacity: 0.95;
+    stroke: var(--electric-yellow) !important;
+  }
+
+  15% {
+    opacity: 0.12;
+  }
+
+  24% {
+    opacity: 0.90;
+    stroke: var(--electric-orange) !important;
+  }
+
+  34% {
+    opacity: 0.08;
+  }
+
+  46% {
+    opacity: 0.85;
+    stroke: var(--electric-yellow) !important;
+  }
+
+  58% {
+    opacity: 0.15;
+  }
+
+  68% {
+    opacity: 0.90;
+    stroke: var(--electric-orange) !important;
+    stroke-dashoffset: 0;
+  }
+
+  78% {
+    opacity: 0.12;
+  }
+
+  86%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
 }
 
 .block-3-copy {
@@ -814,9 +904,8 @@ a { font-family: "Times New Roman", Times, serif; }
 @media (max-width: 600px) {
   :root {
     --menu-height: 56px;
-    --startup-logo-width: min(72vw, 360px);
-    --startup-logo-height: min(38vh, 280px);
-    --header-logo-size: calc(var(--menu-height) - 3px);
+    --startup-logo-width: min(84vw, 430px);
+    --startup-logo-height: min(52vh, 360px);
     --slideshow-padding-vertical: 36px;
     --slideshow-padding-horizontal: 14px;
     --slideshow-row-gap: 18px;
@@ -849,18 +938,16 @@ a { font-family: "Times New Roman", Times, serif; }
 @media (min-width: 601px) and (max-width: 1024px) {
   :root {
     --menu-height: 62px;
-    --startup-logo-width: min(60vw, 460px);
-    --startup-logo-height: min(42vh, 340px);
-    --header-logo-size: calc(var(--menu-height) - 4px);
+    --startup-logo-width: min(72vw, 580px);
+    --startup-logo-height: min(54vh, 450px);
   }
 }
 
 @media (min-width: 1400px) {
   :root {
     --menu-height: 66px;
-    --startup-logo-width: min(46vw, 560px);
-    --startup-logo-height: min(44vh, 400px);
-    --header-logo-size: calc(var(--menu-height) - 5px);
+    --startup-logo-width: min(58vw, 760px);
+    --startup-logo-height: min(58vh, 590px);
     --slideshow-side-margin: 30px;
     --electric-art-width: 105vw;
   }
