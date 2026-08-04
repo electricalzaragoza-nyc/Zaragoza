@@ -974,3 +974,26 @@ a { font-family: "Times New Roman", Times, serif; }
     animation: none !important;
   }
 }
+
+
+/* =========================================
+   BLOCK 3 — staggered text alignment
+   ========================================= */
+
+.block-3-copy {
+  width: min(92vw, 1100px);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.block-3-subtitle {
+  align-self: flex-start;
+  text-align: left;
+}
+
+.block-3-body {
+  align-self: flex-end;
+  text-align: right;
+}
