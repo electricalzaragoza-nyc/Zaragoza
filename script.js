@@ -236,7 +236,7 @@ window.addEventListener(
 
 
 /* ======================================
-   BLOCK 2 â MEDIA LIBRARY
+   BLOCK 2 — MEDIA LIBRARY
    ====================================== */
 
 /*
@@ -293,7 +293,7 @@ const slideshowMedia = [
 
 
 /* ======================================
-   BLOCK 2 â RANDOMIZE MEDIA
+   BLOCK 2 — RANDOMIZE MEDIA
    ====================================== */
 
 function shuffleArray(array) {
@@ -331,7 +331,7 @@ const randomizedMedia =
 
 
 /* ======================================
-   BLOCK 2 â GET TRACKS
+   BLOCK 2 — GET TRACKS
    ====================================== */
 
 const slideshowTracks = [
@@ -352,7 +352,7 @@ const slideshowTracks = [
 
 
 /* ======================================
-   BLOCK 2 â RANDOM ROW DISTRIBUTION
+   BLOCK 2 — RANDOM ROW DISTRIBUTION
    ====================================== */
 
 const guaranteedRows =
@@ -438,7 +438,7 @@ randomizedMedia.forEach(
 
 
 /* ======================================
-   BLOCK 2 â SEAMLESS LOOP
+   BLOCK 2 — SEAMLESS LOOP
    ====================================== */
 
 slideshowTracks.forEach(
@@ -472,224 +472,344 @@ slideshowTracks.forEach(
 
 
 /* ======================================
-   BLOCK 3 â LOAD / BUILD ELECTRIC SVG
+   BLOCK 4 — CONTACT SLOT MACHINE
    ====================================== */
 
-const block3 =
-  document.getElementById("block-3");
+const contactBlock =
+  document.getElementById("contact");
 
-const electricArt =
-  document.getElementById("electric-art");
+const slotRows =
+  Array.from(
+    document.querySelectorAll(
+      ".slot-row"
+    )
+  );
+
+const slotEmojiPool = [
+  "⚡️",
+  "🔥",
+  "💡",
+  "✨",
+  "💥",
+  "⭐️",
+  "🔌",
+  "🛠️",
+  "🔧",
+  "💫"
+];
+
+const SLOT_COUNT = 5;
+const SLOT_STEP = 100;
+const SLOT_BASE_SPIN = 3000;
+const SLOT_STOP_GAP = 300;
+const SLOT_WIN_TIME = 1240;
+const SLOT_RESTART_PAUSE = 900;
+
+let contactSlotsStarted = false;
+let contactSlotLoopToken = 0;
 
 
-async function buildElectricArt() {
+function createSlotRows() {
 
-  if (!electricArt) {
-    return;
-  }
+  slotRows.forEach(
+    row => {
 
-  try {
+      row.replaceChildren();
 
-    const response =
-      await fetch(
-        "images/paper-street-soap.svg"
-      );
+      for (
+        let index = 0;
+        index < SLOT_COUNT;
+        index++
+      ) {
 
-    if (!response.ok) {
+        const windowElement =
+          document.createElement(
+            "span"
+          );
 
-      throw new Error(
-        `SVG load failed: ${response.status}`
-      );
+        windowElement.className =
+          "slot-window";
+
+        const symbol =
+          document.createElement(
+            "span"
+          );
+
+        symbol.className =
+          "slot-symbol";
+
+        symbol.textContent =
+          "⚡️";
+
+        windowElement.appendChild(
+          symbol
+        );
+
+        row.appendChild(
+          windowElement
+        );
+
+      }
 
     }
-
-    const svgText =
-      await response.text();
-
-    const parser =
-      new DOMParser();
-
-    const svgDocument =
-      parser.parseFromString(
-        svgText,
-        "image/svg+xml"
-      );
-
-    const sourceSvg =
-      svgDocument.documentElement;
+  );
+}
 
 
-    /* Responsive scaling */
+function randomSlotEmoji() {
 
-    sourceSvg.removeAttribute("width");
-    sourceSvg.removeAttribute("height");
-
-    sourceSvg.setAttribute(
-      "preserveAspectRatio",
-      "xMidYMid meet"
-    );
-
-    sourceSvg.classList.add(
-      "electric-svg"
-    );
+  return slotEmojiPool[
+    Math.floor(
+      Math.random()
+      *
+      slotEmojiPool.length
+    )
+  ];
+}
 
 
-    const sourcePaths =
-      Array.from(
-        sourceSvg.querySelectorAll(
-          "path"
-        )
-      );
+function spinSingleSlot(
+  slot,
+  stopAfter,
+  token
+) {
 
+  return new Promise(
+    resolve => {
 
-    sourcePaths.forEach(
-      (path, index) => {
-
-        path.classList.add(
-          "electric-source"
+      const symbol =
+        slot.querySelector(
+          ".slot-symbol"
         );
 
-        path.setAttribute(
-          "pathLength",
-          "100"
+      const startedAt =
+        performance.now();
+
+
+      function step() {
+
+        if (
+          token !==
+          contactSlotLoopToken
+        ) {
+          resolve();
+          return;
+        }
+
+
+        const elapsed =
+          performance.now()
+          -
+          startedAt;
+
+
+        if (
+          elapsed >=
+          stopAfter
+        ) {
+
+          symbol.textContent =
+            "⚡️";
+
+          symbol.classList.remove(
+            "slot-enter"
+          );
+
+          slot.classList.add(
+            "slot-stopped"
+          );
+
+          resolve();
+
+          return;
+        }
+
+
+        symbol.textContent =
+          randomSlotEmoji();
+
+        symbol.classList.remove(
+          "slot-enter"
+        );
+
+        void symbol.offsetWidth;
+
+        symbol.classList.add(
+          "slot-enter"
         );
 
 
-        const makeLayer =
-          className => {
+        setTimeout(
+          step,
+          SLOT_STEP
+        );
 
-            const clone =
-              path.cloneNode(true);
+      }
 
-            /*
-              IMPORTANT:
-              remove exported inline SVG styles
-              so CSS can control the lightning.
-            */
 
-            clone.removeAttribute("id");
-            clone.removeAttribute("style");
-            clone.removeAttribute("fill");
-            clone.removeAttribute("stroke");
-            clone.removeAttribute("opacity");
+      step();
 
-            clone.setAttribute(
-              "class",
-              className
+    }
+  );
+}
+
+
+async function runContactSlotLoop() {
+
+  const token =
+    ++contactSlotLoopToken;
+
+
+  while (
+    contactSlotsStarted &&
+    token === contactSlotLoopToken
+  ) {
+
+    slotRows.forEach(
+      row => {
+
+        row.classList.remove(
+          "slot-win"
+        );
+
+        Array.from(
+          row.children
+        ).forEach(
+          slot => {
+
+            slot.classList.remove(
+              "slot-stopped"
             );
 
-            clone.setAttribute(
-              "pathLength",
-              "100"
-            );
-
-            return clone;
-
-          };
-
-
-        const trail =
-          makeLayer(
-            "electric-trail"
-          );
-
-        const glow =
-          makeLayer(
-            "electric-glow"
-          );
-
-        const warm =
-          makeLayer(
-            "electric-warm"
-          );
-
-        const core =
-          makeLayer(
-            "electric-core"
-          );
-
-
-        /*
-          Small timing differences per path.
-        */
-
-        const stagger =
-          (index % 13)
-          * 0.014;
-
-        const warmOffset =
-          (index % 9)
-          * 0.022;
-
-
-        trail.style.animationDelay =
-          `${stagger}s`;
-
-        glow.style.animationDelay =
-          `${stagger}s, ${stagger}s`;
-
-        core.style.animationDelay =
-          `${stagger}s`;
-
-        warm.style.animationDelay =
-          `${warmOffset}s`;
-
-
-        path.parentNode.insertBefore(
-          trail,
-          path.nextSibling
-        );
-
-        path.parentNode.insertBefore(
-          glow,
-          trail.nextSibling
-        );
-
-        path.parentNode.insertBefore(
-          warm,
-          glow.nextSibling
-        );
-
-        path.parentNode.insertBefore(
-          core,
-          warm.nextSibling
+          }
         );
 
       }
     );
 
 
-    electricArt.replaceChildren(
-      document.importNode(
-        sourceSvg,
-        true
-      )
+    const jobs = [];
+
+
+    slotRows.forEach(
+      row => {
+
+        const slots =
+          Array.from(
+            row.children
+          );
+
+
+        slots.forEach(
+          (slot, index) => {
+
+            const stopAfter =
+              SLOT_BASE_SPIN
+              +
+              (
+                index
+                *
+                SLOT_STOP_GAP
+              );
+
+
+            jobs.push(
+              spinSingleSlot(
+                slot,
+                stopAfter,
+                token
+              )
+            );
+
+          }
+        );
+
+      }
+    );
+
+
+    await Promise.all(
+      jobs
+    );
+
+
+    if (
+      !contactSlotsStarted ||
+      token !== contactSlotLoopToken
+    ) {
+      return;
+    }
+
+
+    slotRows.forEach(
+      row => {
+
+        row.classList.add(
+          "slot-win"
+        );
+
+      }
+    );
+
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          SLOT_WIN_TIME
+        )
+    );
+
+
+    slotRows.forEach(
+      row => {
+
+        row.classList.remove(
+          "slot-win"
+        );
+
+      }
+    );
+
+
+    await new Promise(
+      resolve =>
+        setTimeout(
+          resolve,
+          SLOT_RESTART_PAUSE
+        )
     );
 
   }
-
-  catch (error) {
-
-    console.error(
-      "Block 3 electric SVG:",
-      error
-    );
-
-  }
-
 }
 
 
-buildElectricArt();
+function startContactSlots() {
+
+  if (contactSlotsStarted) {
+    return;
+  }
+
+  contactSlotsStarted = true;
+
+  runContactSlotLoop();
+}
 
 
-/* ======================================
-   BLOCK 3 â TEXT SCROLL ANIMATION
-   ====================================== */
+function stopContactSlots() {
 
-if (block3) {
+  contactSlotsStarted = false;
 
-  const block3Observer =
+  contactSlotLoopToken++;
+}
+
+
+createSlotRows();
+
+
+if (contactBlock) {
+
+  const contactObserver =
     new IntersectionObserver(
 
       entries => {
@@ -697,42 +817,25 @@ if (block3) {
         entries.forEach(
           entry => {
 
-            const rect =
-              entry.boundingClientRect;
+            /*
+              Start once most of Block 4
+              is actually visible.
+            */
 
+            if (
+              entry.isIntersecting &&
+              entry.intersectionRatio >= 0.65
+            ) {
 
-            if (entry.isIntersecting) {
-
-              block3.classList.add(
-                "block-visible"
-              );
-
-              block3.classList.remove(
-                "block-passed"
-              );
+              startContactSlots();
 
             }
 
             else if (
-              rect.bottom < 0
+              !entry.isIntersecting
             ) {
 
-              block3.classList.remove(
-                "block-visible"
-              );
-
-              block3.classList.add(
-                "block-passed"
-              );
-
-            }
-
-            else {
-
-              block3.classList.remove(
-                "block-visible",
-                "block-passed"
-              );
+              stopContactSlots();
 
             }
 
@@ -742,14 +845,18 @@ if (block3) {
       },
 
       {
-        threshold: 0.20
+        threshold: [
+          0,
+          0.65,
+          1
+        ]
       }
 
     );
 
 
-  block3Observer.observe(
-    block3
+  contactObserver.observe(
+    contactBlock
   );
 
 }
