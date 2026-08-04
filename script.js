@@ -46,8 +46,11 @@ window.addEventListener("orientationchange", updateDeviceInfo);
 window.addEventListener("load", () => {
   setTimeout(() => {
     header?.classList.add("loaded");
-    document.body.classList.add("site-ready");
   }, 250);
+
+  setTimeout(() => {
+    titleBlock?.classList.add("title-visible");
+  }, 980);
 });
 
 /* ======================================
@@ -64,8 +67,15 @@ function toggleMenu() {
 }
 
 menuToggle?.addEventListener("click", toggleMenu);
+
 backgroundBlur?.addEventListener("click", () => {
   if (menuOpen) toggleMenu();
+});
+
+submenu?.querySelectorAll("a").forEach(link => {
+  link.addEventListener("click", () => {
+    if (menuOpen) toggleMenu();
+  });
 });
 
 /* ======================================
@@ -94,13 +104,21 @@ function updateBlock1Visibility() {
   const rect = homeBlock.getBoundingClientRect();
   const vh = window.innerHeight || document.documentElement.clientHeight;
 
-  const visibleEnough = rect.bottom > vh * 0.38 && rect.top < vh * 0.62;
-  titleBlock.classList.toggle("title-hidden", !visibleEnough);
+  const visibleEnough =
+    rect.bottom > vh * 0.42 &&
+    rect.top < vh * 0.58;
+
+  if (visibleEnough) {
+    titleBlock.classList.add("title-visible");
+    titleBlock.classList.remove("title-hidden");
+  } else {
+    titleBlock.classList.remove("title-visible");
+    titleBlock.classList.add("title-hidden");
+  }
 }
 
 window.addEventListener("scroll", updateBlock1Visibility, { passive: true });
 window.addEventListener("resize", updateBlock1Visibility);
-window.addEventListener("load", () => requestAnimationFrame(updateBlock1Visibility));
 
 /* ======================================
    BLOCK 2 MEDIA LIBRARY
@@ -131,17 +149,35 @@ function buildSlideshow() {
 
   if (tracks.some(track => !track)) return;
 
-  tracks.forEach(track => track.replaceChildren());
+  tracks.forEach(track => {
+    track.replaceChildren();
+    track.style.removeProperty("--loop-distance");
+  });
 
   const randomizedMedia = shuffleArray(slideshowMedia);
   const guaranteedRows = shuffleArray([0, 1, 2]);
 
+  /*
+    Build one independent source set per row.
+    Each source set is duplicated afterward.
+  */
+  const rowSets = tracks.map(() => {
+    const set = document.createElement("div");
+    set.className = "picture-track-set";
+    return set;
+  });
+
   randomizedMedia.forEach((media, index) => {
-    const rowIndex = index < 3 ? guaranteedRows[index] : Math.floor(Math.random() * 3);
+    const rowIndex =
+      index < 3
+        ? guaranteedRows[index]
+        : Math.floor(Math.random() * 3);
+
     const frame = document.createElement("div");
     frame.className = "media-frame";
 
     let element;
+
     if (media.type === "video") {
       element = document.createElement("video");
       element.autoplay = true;
@@ -154,24 +190,91 @@ function buildSlideshow() {
     }
 
     element.src = media.src;
-    element.style.objectPosition = media.position || "50% 50%";
-    element.style.transform = `scale(${media.scale || 1})`;
+    element.style.objectPosition =
+      media.position || "50% 50%";
+    element.style.transform =
+      `scale(${media.scale || 1})`;
 
     frame.appendChild(element);
-    tracks[rowIndex].appendChild(frame);
+    rowSets[rowIndex].appendChild(frame);
   });
 
-  tracks.forEach(track => {
-    const originals = Array.from(track.children);
-    originals.forEach(item => {
-      const clone = item.cloneNode(true);
-      clone.setAttribute("aria-hidden", "true");
-      track.appendChild(clone);
+  tracks.forEach((track, index) => {
+    const sourceSet = rowSets[index];
+
+    /*
+      If a row has no media, leave it empty safely.
+    */
+    if (!sourceSet.children.length) {
+      return;
+    }
+
+    const duplicateSet =
+      sourceSet.cloneNode(true);
+
+    duplicateSet.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+
+    track.append(
+      sourceSet,
+      duplicateSet
+    );
+
+    /*
+      Wait for layout, then measure the exact width
+      of ONE repeated set. The animation moves by
+      precisely this amount, so set #2 takes over at
+      the exact pixel where set #1 ends.
+    */
+    requestAnimationFrame(() => {
+      const loopDistance =
+        sourceSet.getBoundingClientRect().width;
+
+      track.style.setProperty(
+        "--loop-distance",
+        `${loopDistance}px`
+      );
     });
   });
 }
 
 buildSlideshow();
+
+/*
+  Recalculate the exact loop distance if the
+  viewport/orientation changes.
+*/
+function refreshSlideshowLoopDistances() {
+  document
+    .querySelectorAll(".picture-track")
+    .forEach(track => {
+      const firstSet =
+        track.querySelector(".picture-track-set");
+
+      if (!firstSet) return;
+
+      track.style.setProperty(
+        "--loop-distance",
+        `${firstSet.getBoundingClientRect().width}px`
+      );
+    });
+}
+
+window.addEventListener(
+  "resize",
+  () => requestAnimationFrame(
+    refreshSlideshowLoopDistances
+  )
+);
+
+window.addEventListener(
+  "orientationchange",
+  () => requestAnimationFrame(
+    refreshSlideshowLoopDistances
+  )
+);
 
 /* ======================================
    BLOCK 3 ELECTRIC SVG
@@ -238,28 +341,33 @@ buildElectricArt();
 
 /* BLOCK 3 text visibility */
 
-function updateBlock3Visibility() {
-  if (!block3) return;
+const block3Copy = document.querySelector(".block-3-copy");
 
-  const rect = block3.getBoundingClientRect();
-  const vh = window.innerHeight || document.documentElement.clientHeight;
-  const inView = rect.top < vh * 0.72 && rect.bottom > vh * 0.28;
-  const passedAbove = rect.bottom <= vh * 0.12;
+if (block3 && block3Copy) {
+  const block3TextObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        block3.classList.add("block-visible");
+        block3.classList.remove("block-passed");
+      } else {
+        const rect = block3Copy.getBoundingClientRect();
 
-  if (inView) {
-    block3.classList.add("block-visible");
-    block3.classList.remove("block-passed");
-  } else if (passedAbove) {
-    block3.classList.remove("block-visible");
-    block3.classList.add("block-passed");
-  } else {
-    block3.classList.remove("block-visible", "block-passed");
-  }
+        block3.classList.remove("block-visible");
+
+        if (rect.bottom < 0) {
+          block3.classList.add("block-passed");
+        } else {
+          block3.classList.remove("block-passed");
+        }
+      }
+    });
+  }, {
+    threshold: 0.18,
+    rootMargin: "0px 0px -8% 0px"
+  });
+
+  block3TextObserver.observe(block3Copy);
 }
-
-window.addEventListener("scroll", updateBlock3Visibility, { passive: true });
-window.addEventListener("resize", updateBlock3Visibility);
-window.addEventListener("load", () => requestAnimationFrame(updateBlock3Visibility));
 
 /* ======================================
    BLOCK 4 SLOT MACHINE

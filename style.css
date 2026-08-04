@@ -11,7 +11,10 @@
   --menu-height: clamp(54px, 7vw, 66px);
   --menu-background: linear-gradient(90deg, #f5f1e8, #e8ded2, #f3eadc);
   --menu-border: rgba(35, 30, 25, 0.18);
-  --logo-size: clamp(38px, 5vw, 52px);
+  /* LOGO SIZING — EDIT HERE */
+  --startup-logo-width: clamp(220px, 58vw, 560px);
+  --startup-logo-height: clamp(160px, 44vh, 400px);
+  --header-logo-size: calc(var(--menu-height) - 4px);
   --hamburger-width: 32px;
   --hamburger-thickness: 3px;
   --hamburger-gap: 7px;
@@ -43,15 +46,18 @@
   --media-radius: 10px;
   --media-feather: 1px;
   --media-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
+
+  /* SPACE RESERVED INSIDE EACH ROW SO SHADOW/FEATHER IS NOT CLIPPED */
+  --media-shadow-safe-space: 10px;
   --row-1-speed: 24s;
   --row-2-speed: 32s;
   --row-3-speed: 21s;
-  --block-2-bottom-gap: clamp(100px, 14vh, 180px);
+  --block-2-bottom-gap: clamp(58px, 8vh, 105px);
 
   /* BLOCK 3 */
   --block-3-side-padding: clamp(18px, 5vw, 72px);
-  --block-3-top-gap: clamp(90px, 13vh, 170px);
-  --block-3-bottom-gap: clamp(100px, 15vh, 190px);
+  --block-3-top-gap: clamp(48px, 7vh, 90px);
+  --block-3-bottom-gap: clamp(58px, 8vh, 105px);
   --electric-art-width: 112vw;
   --electric-art-max-width: 1500px;
   --electric-art-x: 50%;
@@ -75,9 +81,9 @@
   --block-3-body-weight: normal;
   --block-3-body-spacing: 0px;
   --block-3-text-gap: 12px;
-  --block-3-text-rise: 24px;
-  --block-3-text-speed: 420ms;
-  --block-3-body-delay: 120ms;
+  --block-3-text-rise: 36px;
+  --block-3-text-speed: 650ms;
+  --block-3-body-delay: 160ms;
 
   /* BLOCK 4 */
   --contact-title-size: var(--title-size);
@@ -167,11 +173,20 @@ a { font-family: "Times New Roman", Times, serif; }
 #site-header.menu-open { transform: translateY(0); }
 
 #site-logo {
-  width: var(--logo-size);
-  height: var(--logo-size);
+  width: var(--startup-logo-width);
+  height: var(--startup-logo-height);
   object-fit: contain;
   display: block;
   flex: 0 0 auto;
+
+  transition:
+    width 700ms cubic-bezier(.22,.61,.36,1),
+    height 700ms cubic-bezier(.22,.61,.36,1);
+}
+
+#site-header.loaded #site-logo {
+  width: var(--header-logo-size);
+  height: var(--header-logo-size);
 }
 
 /* HAMBURGER */
@@ -292,20 +307,25 @@ a { font-family: "Times New Roman", Times, serif; }
   width: min(100%, 1100px);
   margin: 0 auto;
   text-align: center;
+
   opacity: 0;
-  transform: translateY(18px);
-  transition: opacity 450ms ease, transform 450ms ease;
+  transform: translateY(30px);
+
+  transition:
+    opacity 650ms ease,
+    transform 650ms ease;
+
   will-change: opacity, transform;
 }
 
-body.site-ready .title-block {
+.title-block.title-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-body.site-ready .title-block.title-hidden {
+.title-block.title-hidden {
   opacity: 0;
-  transform: translateY(-28px);
+  transform: translateY(-32px);
 }
 
 .main-title {
@@ -362,18 +382,56 @@ body.site-ready .title-block.title-hidden {
   height: 100%;
   min-width: 0;
   min-height: 0;
+
+  /*
+    Keep horizontal masking, but reserve internal
+    top/bottom room so frame shadows are never
+    cut off by the row boundary.
+  */
   overflow: hidden;
+
+  padding-top: var(--media-shadow-safe-space);
+  padding-bottom: var(--media-shadow-safe-space);
+
   display: flex;
   align-items: center;
 }
 
 .picture-track {
-  height: 100%;
+  height: calc(
+    100%
+    -
+    (
+      var(--media-shadow-safe-space)
+      * 2
+    )
+  );
+
   width: max-content;
+
   display: flex;
   align-items: center;
-  gap: var(--slideshow-picture-gap);
+
+  gap: 0;
+
   will-change: transform;
+}
+
+.picture-track-set {
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: var(--slideshow-picture-gap);
+
+  flex-shrink: 0;
+
+  /*
+    One normal picture gap between the end of
+    one repeated set and the start of the next.
+  */
+  padding-right: var(--slideshow-picture-gap);
 }
 
 .row-1 .picture-track { animation: slideshow-left var(--row-1-speed) linear infinite; }
@@ -401,12 +459,30 @@ body.site-ready .title-block.title-hidden {
 }
 
 @keyframes slideshow-left {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform:
+      translateX(
+        calc(-1 * var(--loop-distance, 0px))
+      );
+  }
 }
 
 @keyframes slideshow-right {
-  from { transform: translateX(-50%); }
+  from {
+    transform:
+      translateX(
+        calc(-1 * var(--loop-distance, 0px))
+      );
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
   to { transform: translateX(0); }
 }
 
@@ -438,8 +514,8 @@ body.site-ready .title-block.title-hidden {
 #block-3 {
   position: relative;
   width: 100%;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 88vh;
+  min-height: 88dvh;
   margin-top: var(--block-3-top-gap);
   margin-bottom: var(--block-3-bottom-gap);
   padding: 0 var(--block-3-side-padding);
@@ -772,7 +848,9 @@ body.site-ready .title-block.title-hidden {
 @media (max-width: 600px) {
   :root {
     --menu-height: 56px;
-    --logo-size: 40px;
+    --startup-logo-width: min(72vw, 360px);
+    --startup-logo-height: min(38vh, 280px);
+    --header-logo-size: calc(var(--menu-height) - 3px);
     --slideshow-padding-vertical: 36px;
     --slideshow-padding-horizontal: 14px;
     --slideshow-row-gap: 18px;
@@ -789,13 +867,13 @@ body.site-ready .title-block.title-hidden {
   }
 
   #slideshow-block {
-    padding-bottom: clamp(80px, 12vh, 130px);
+    padding-bottom: clamp(54px, 8vh, 92px);
   }
 
   #block-3 {
-    min-height: 100svh;
-    margin-top: clamp(70px, 10vh, 120px);
-    margin-bottom: clamp(80px, 13vh, 130px);
+    min-height: 86svh;
+    margin-top: clamp(44px, 6vh, 76px);
+    margin-bottom: clamp(54px, 8vh, 92px);
   }
 
   .contact-copy { width: 72%; }
@@ -805,14 +883,18 @@ body.site-ready .title-block.title-hidden {
 @media (min-width: 601px) and (max-width: 1024px) {
   :root {
     --menu-height: 62px;
-    --logo-size: 46px;
+    --startup-logo-width: min(60vw, 460px);
+    --startup-logo-height: min(42vh, 340px);
+    --header-logo-size: calc(var(--menu-height) - 4px);
   }
 }
 
 @media (min-width: 1400px) {
   :root {
     --menu-height: 66px;
-    --logo-size: 52px;
+    --startup-logo-width: min(46vw, 560px);
+    --startup-logo-height: min(44vh, 400px);
+    --header-logo-size: calc(var(--menu-height) - 5px);
     --slideshow-side-margin: 30px;
     --electric-art-width: 105vw;
   }
