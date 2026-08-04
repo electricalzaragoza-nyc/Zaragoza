@@ -1,0 +1,647 @@
+/* =========================================
+   MAIN CUSTOMIZATION VARIABLES
+   ========================================= */
+
+:root {
+
+  /* GLOBAL TEXT */
+  --default-text-color: #000000;
+
+  /* HEADER */
+  --menu-height: clamp(54px, 7vw, 66px);
+  --menu-background:
+    linear-gradient(
+      90deg,
+      #f5f1e8,
+      #e8ded2,
+      #f3eadc
+    );
+  --menu-border: rgba(35, 30, 25, 0.18);
+
+  /* LOGO */
+  --logo-size: clamp(38px, 5vw, 52px);
+
+  /* HAMBURGER */
+  --hamburger-width: 32px;
+  --hamburger-thickness: 3px;
+  --hamburger-gap: 7px;
+
+  /* SUBMENU */
+  --submenu-font-size: clamp(22px, 3vw, 30px);
+
+  /* EDIT BACKGROUND BLUR HERE */
+  --background-blur-strength: 10px;
+
+  /* BLOCK 1 — TITLE */
+  --title-size: clamp(42px, 8vw, 90px);
+  --title-color: #000000;
+  --title-spacing: 0px;
+
+  /* BLOCK 1 — SUBTITLE */
+  --subtitle-size: clamp(18px, 3vw, 28px);
+  --subtitle-color: #000000;
+  --subtitle-spacing: 0px;
+  --subtitle-indent: 0.5px;
+
+  /* BLOCK 2 — BOX */
+  --slideshow-background-rgb: 222, 222, 222;
+  --slideshow-opacity: 0.78;
+  --slideshow-blur: 14px;
+  --slideshow-radius: 24px;
+
+  /* BLOCK 2 — RESPONSIVE SIZE */
+  --slideshow-side-margin: clamp(6px, 2vw, 24px);
+  --slideshow-height: clamp(520px, 78dvh, 900px);
+
+  /* BLOCK 2 — SPACING */
+  --slideshow-padding-vertical: 48px;
+  --slideshow-padding-horizontal: 24px;
+  --slideshow-row-gap: 24px;
+  --slideshow-picture-gap: 12px;
+
+  /* BLOCK 2 — MEDIA FRAME */
+  --media-aspect-ratio: 1 / 1;
+  --media-radius: 10px;
+
+  /* EDIT FEATHER / FLOAT HERE */
+  --media-feather: 1px;
+  --media-shadow: 0 3px 10px rgba(0, 0, 0, 0.10);
+
+  /* BLOCK 2 — ROW SPEEDS */
+  --row-1-speed: 24s;
+  --row-2-speed: 32s;
+  --row-3-speed: 21s;
+}
+
+
+/* =========================================
+   GLOBAL
+   ========================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  background: white;
+  color: var(--default-text-color);
+  font-family: "Times New Roman", Times, serif;
+}
+
+button,
+a {
+  font-family: "Times New Roman", Times, serif;
+}
+
+
+/* =========================================
+   STARTUP LOGO / HEADER
+   ========================================= */
+
+#site-header {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: white;
+  z-index: 10000;
+
+  transition:
+    height 700ms cubic-bezier(.22,.61,.36,1),
+    background 500ms ease,
+    transform 350ms ease;
+}
+
+#site-header.loaded {
+  inset: auto 0 auto 0;
+  top: 0;
+
+  height:
+    calc(
+      var(--menu-height)
+      + env(safe-area-inset-top)
+    );
+
+  padding-top: env(safe-area-inset-top);
+  background: var(--menu-background);
+  border-bottom: 1px solid var(--menu-border);
+}
+
+#site-logo {
+  width: var(--logo-size);
+  height: var(--logo-size);
+  object-fit: contain;
+  display: block;
+}
+
+
+/* =========================================
+   HAMBURGER BUTTON
+   ========================================= */
+
+#menu-toggle {
+  position: absolute;
+
+  left: clamp(12px, 3vw, 28px);
+
+  top:
+    calc(
+      env(safe-area-inset-top)
+      + var(--menu-height) / 2
+    );
+
+  transform: translateY(-50%);
+
+  width: 44px;
+  height: 44px;
+
+  padding: 6px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  gap: var(--hamburger-gap);
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 300ms ease;
+}
+
+#site-header.loaded #menu-toggle {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#menu-toggle span {
+  display: block;
+
+  width: var(--hamburger-width);
+  height: var(--hamburger-thickness);
+
+  background: #050505;
+  border-radius: 2px;
+
+  transition:
+    transform 300ms ease,
+    opacity 200ms ease;
+}
+
+#menu-toggle.open span:nth-child(1) {
+  transform:
+    translateY(
+      calc(
+        var(--hamburger-gap)
+        + var(--hamburger-thickness)
+      )
+    )
+    rotate(45deg);
+}
+
+#menu-toggle.open span:nth-child(2) {
+  opacity: 0;
+}
+
+#menu-toggle.open span:nth-child(3) {
+  transform:
+    translateY(
+      calc(
+        -1 *
+        (
+          var(--hamburger-gap)
+          + var(--hamburger-thickness)
+        )
+      )
+    )
+    rotate(-45deg);
+}
+
+
+/* =========================================
+   SUBMENU
+   ========================================= */
+
+#submenu {
+  position: fixed;
+
+  top:
+    calc(
+      var(--menu-height)
+      + env(safe-area-inset-top)
+    );
+
+  left: 0;
+  width: 100%;
+
+  background: white;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  gap: 22px;
+  padding: 26px 20px 30px;
+
+  transform: translateY(-120%);
+  opacity: 0;
+  pointer-events: none;
+
+  transition:
+    transform 350ms ease,
+    opacity 250ms ease;
+
+  z-index: 9999;
+
+  border-bottom: 1px solid rgba(0,0,0,0.10);
+}
+
+#submenu.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#submenu a {
+  color: var(--default-text-color);
+  text-decoration: none;
+  font-size: var(--submenu-font-size);
+  font-weight: bold;
+  text-align: center;
+}
+
+
+/* =========================================
+   BACKGROUND BLUR
+   ========================================= */
+
+#background-blur {
+  position: fixed;
+  inset: 0;
+
+  backdrop-filter:
+    blur(var(--background-blur-strength));
+
+  -webkit-backdrop-filter:
+    blur(var(--background-blur-strength));
+
+  background: rgba(255, 255, 255, 0.15);
+
+  opacity: 0;
+  pointer-events: none;
+
+  transition: opacity 250ms ease;
+
+  z-index: 9000;
+}
+
+#background-blur.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+
+/* =========================================
+   HEADER SCROLL
+   ========================================= */
+
+#site-header.hidden {
+  transform: translateY(-110%);
+}
+
+#site-header.menu-open {
+  transform: translateY(0);
+}
+
+
+/* =========================================
+   MAIN WEBSITE
+   ========================================= */
+
+#website-content {
+  width: 100%;
+
+  padding-top:
+    calc(
+      var(--menu-height)
+      + env(safe-area-inset-top)
+    );
+}
+
+
+/* =========================================
+   BLOCK 1 — TITLE
+   ========================================= */
+
+#home {
+  width: 100%;
+}
+
+.title-block {
+  width: 100%;
+  text-align: center;
+  padding-left: 20px;
+  padding-right: 20px;
+
+  transition:
+    opacity 400ms ease,
+    transform 400ms ease;
+
+  will-change:
+    opacity,
+    transform;
+}
+
+.title-block.title-hidden {
+  opacity: 0;
+  transform: translateY(-24px);
+}
+
+.main-title {
+  /* EDIT TITLE HERE */
+  color: var(--title-color);
+  font-family: "Times New Roman", Times, serif;
+  font-size: var(--title-size);
+  font-weight: bold;
+  letter-spacing: var(--title-spacing);
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+
+.main-subtitle {
+  /* EDIT SUBTITLE HERE */
+  color: var(--subtitle-color);
+  font-family: "Times New Roman", Times, serif;
+  font-size: var(--subtitle-size);
+  font-weight: normal;
+  letter-spacing: var(--subtitle-spacing);
+  line-height: 1.2;
+  text-align: center;
+  margin-top: var(--subtitle-indent);
+  margin-bottom: 0;
+}
+
+
+/* =========================================
+   BLOCK 2 — SLIDESHOW OUTER AREA
+   ========================================= */
+
+#slideshow-block {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 30px 0;
+}
+
+
+/* =========================================
+   BLOCK 2 — BACKGROUND BOX
+   ========================================= */
+
+#slideshow-box {
+  width:
+    calc(
+      100%
+      -
+      (
+        var(--slideshow-side-margin)
+        * 2
+      )
+    );
+
+  height: var(--slideshow-height);
+
+  padding:
+    var(--slideshow-padding-vertical)
+    var(--slideshow-padding-horizontal);
+
+  display: grid;
+  grid-template-rows: repeat(3, 1fr);
+
+  gap: var(--slideshow-row-gap);
+
+  overflow: hidden;
+
+  border-radius: var(--slideshow-radius);
+
+  background:
+    rgba(
+      var(--slideshow-background-rgb),
+      var(--slideshow-opacity)
+    );
+
+  backdrop-filter: blur(var(--slideshow-blur));
+  -webkit-backdrop-filter: blur(var(--slideshow-blur));
+}
+
+
+/* =========================================
+   BLOCK 2 — ROWS
+   ========================================= */
+
+.picture-row {
+  width: 100%;
+  height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+}
+
+
+/* =========================================
+   BLOCK 2 — MOVING TRACKS
+   ========================================= */
+
+.picture-track {
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+
+  gap: var(--slideshow-picture-gap);
+
+  width: max-content;
+
+  will-change: transform;
+}
+
+.row-1 .picture-track {
+  animation:
+    slideshow-left
+    var(--row-1-speed)
+    linear
+    infinite;
+}
+
+.row-2 .picture-track {
+  animation:
+    slideshow-right
+    var(--row-2-speed)
+    linear
+    infinite;
+}
+
+.row-3 .picture-track {
+  animation:
+    slideshow-left
+    var(--row-3-speed)
+    linear
+    infinite;
+}
+
+
+/* =========================================
+   BLOCK 2 — MEDIA FRAMES
+   ========================================= */
+
+.media-frame {
+  height: 100%;
+
+  aspect-ratio: var(--media-aspect-ratio);
+
+  flex-shrink: 0;
+  position: relative;
+
+  overflow: hidden;
+
+  border-radius: var(--media-radius);
+
+  box-shadow: var(--media-shadow);
+}
+
+.media-frame img,
+.media-frame video {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  object-fit: cover;
+
+  border-radius: inherit;
+
+  filter: blur(var(--media-feather));
+}
+
+
+/* =========================================
+   BLOCK 2 — LOOP ANIMATIONS
+   ========================================= */
+
+@keyframes slideshow-left {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes slideshow-right {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+
+/* =========================================
+   PHONE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+  :root {
+    --menu-height: 56px;
+    --logo-size: 40px;
+
+    --slideshow-padding-vertical: 36px;
+    --slideshow-padding-horizontal: 14px;
+
+    --slideshow-row-gap: 18px;
+    --slideshow-picture-gap: 10px;
+
+    --slideshow-radius: 20px;
+  }
+
+}
+
+
+/* =========================================
+   TABLET
+   ========================================= */
+
+@media
+(min-width: 601px)
+and
+(max-width: 1024px) {
+
+  :root {
+    --menu-height: 62px;
+    --logo-size: 46px;
+  }
+
+}
+
+
+/* =========================================
+   LARGE SCREEN
+   ========================================= */
+
+@media (min-width: 1400px) {
+
+  :root {
+    --menu-height: 66px;
+    --logo-size: 52px;
+
+    --slideshow-side-margin: 30px;
+  }
+
+}
+
+
+/* =========================================
+   REDUCED MOTION
+   ========================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+  #site-header,
+  #submenu,
+  #menu-toggle span,
+  #background-blur,
+  .title-block {
+    transition: none;
+  }
+
+  .picture-track {
+    animation: none !important;
+  }
+
+}
