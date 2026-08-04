@@ -610,6 +610,27 @@ a { font-family: "Times New Roman", Times, serif; }
     opacity: 1;
   }
 
+  60% {
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+
+  64% {
+    opacity: 0.18;
+    stroke-dashoffset: 0;
+  }
+
+  67%,
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
+
+  2% {
+    opacity: 1;
+  }
+
   68% {
     opacity: 1;
     stroke-dashoffset: 0;
@@ -636,6 +657,31 @@ a { font-family: "Times New Roman", Times, serif; }
     opacity: var(--electric-trail-opacity);
   }
 
+  60% {
+    opacity: var(--electric-trail-opacity);
+    stroke-dashoffset: 0;
+  }
+
+  74% {
+    opacity: var(--electric-trail-opacity);
+    stroke-dashoffset: 0;
+  }
+
+  86% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 100;
+  }
+}
+
+  3% {
+    opacity: var(--electric-trail-opacity);
+  }
+
   68% {
     opacity: var(--electric-trail-opacity);
     stroke-dashoffset: 0;
@@ -657,6 +703,44 @@ a { font-family: "Times New Roman", Times, serif; }
     opacity: 0;
     stroke-dashoffset: 100;
   }
+
+  8% {
+    opacity: 0.85;
+    stroke: var(--electric-yellow) !important;
+  }
+
+  15% {
+    opacity: 0.10;
+  }
+
+  24% {
+    opacity: 0.80;
+    stroke: var(--electric-orange) !important;
+  }
+
+  34% {
+    opacity: 0.08;
+  }
+
+  46% {
+    opacity: 0.70;
+    stroke: var(--electric-yellow) !important;
+  }
+
+  56% {
+    opacity: 0.10;
+  }
+
+  61% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+
+  100% {
+    opacity: 0;
+    stroke-dashoffset: 0;
+  }
+}
 
   8% {
     opacity: 0.95;

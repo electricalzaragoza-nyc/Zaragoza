@@ -121,16 +121,15 @@ function updateBlock1Visibility() {
 
   /*
     Fade range:
-      top of page        -> fully visible
-      ~12% viewport down -> starts fading
-      ~48% viewport down -> fully hidden
+      first scroll movement -> fade begins
+      ~26% viewport down    -> fully hidden
 
     Because this is calculated directly from scroll
     position, scrolling upward automatically reverses
     the exact same animation.
   */
-  const fadeStart = vh * 0.12;
-  const fadeEnd = vh * 0.48;
+  const fadeStart = 0;
+  const fadeEnd = vh * 0.26;
 
   const scrolledPastTop =
     Math.max(0, -rect.top);
@@ -149,7 +148,7 @@ function updateBlock1Visibility() {
     1 - progress;
 
   const translateY =
-    -32 * progress;
+    -48 * progress;
 
   titleBlock.style.opacity =
     opacity.toFixed(3);
