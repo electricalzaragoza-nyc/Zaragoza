@@ -1,1 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
 
+  <title>Work Done — Zaragoza</title>
+
+  <link rel="stylesheet" href="work-done.css?v=1">
+</head>
+
+<body>
+
+  <!-- SAME VISUAL LANGUAGE AS HOME HEADER -->
+  <header id="site-header">
+
+    <button
+      id="menu-toggle"
+      type="button"
+      aria-label="Open menu"
+      aria-expanded="false"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <a class="header-logo-link" href="/" aria-label="Go home">
+      <img
+        src="../images/paper-street-soap.svg"
+        id="site-logo"
+        alt="Zaragoza"
+      >
+    </a>
+
+  </header>
+
+
+  <nav id="submenu" aria-label="Main navigation">
+    <a href="/">Home</a>
+    <a href="/work-done/" aria-current="page">Work Done</a>
+    <a href="/#contact">Contact</a>
+  </nav>
+
+  <button
+    id="background-blur"
+    type="button"
+    aria-label="Close menu"
+  ></button>
+
+
+  <main class="work-page">
+
+    <section class="work-intro">
+      <h1>Work Done</h1>
+    </section>
+
+    <!-- JavaScript injects the newest five posts here -->
+    <section
+      id="work-feed"
+      class="work-feed"
+      aria-label="Latest work"
+    ></section>
+
+    <section class="archive-callout">
+      <a href="/archive/" class="archive-link">
+        Archive <span aria-hidden="true">→</span>
+      </a>
+    </section>
+
+  </main>
+
+
+  <footer id="site-footer">
+    <p>Made in NYC. 🗽</p>
+  </footer>
+
+
+  <script src="posts.js?v=1"></script>
+  <script src="work-done.js?v=1"></script>
+
+</body>
+</html>
