@@ -1,1 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
 
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <title>Archive — Zaragoza</title>
+
+  <link rel="stylesheet" href="archive.css?v=1">
+</head>
+
+<body>
+
+  <!-- SAME HEADER LANGUAGE AS HOME + WORK DONE -->
+  <header id="site-header">
+
+    <button
+      id="menu-toggle"
+      type="button"
+      aria-label="Open menu"
+      aria-expanded="false"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <a
+      class="header-logo-link"
+      href="/"
+      aria-label="Go home"
+    >
+      <img
+        src="../images/paper-street-soap.svg"
+        id="site-logo"
+        alt="Zaragoza"
+      >
+    </a>
+
+  </header>
+
+
+  <nav
+    id="submenu"
+    aria-label="Main navigation"
+  >
+    <a href="/">Home</a>
+    <a href="/work-done/">Work Done</a>
+    <a href="/archive/" aria-current="page">Archive</a>
+    <a href="/#contact">Contact</a>
+  </nav>
+
+
+  <button
+    id="background-blur"
+    type="button"
+    aria-label="Close menu"
+  ></button>
+
+
+  <main class="archive-page">
+
+    <section class="archive-intro">
+      <h1>Archive</h1>
+    </section>
+
+    <!-- JavaScript builds collapsible year sections here -->
+    <section
+      id="archive-years"
+      class="archive-years"
+      aria-label="Media archive"
+    ></section>
+
+  </main>
+
+
+  <footer id="site-footer">
+    <p>Made in NYC. 🗽</p>
+  </footer>
+
+
+  <!-- LIGHTBOX -->
+  <div
+    id="archive-lightbox"
+    class="archive-lightbox"
+    aria-hidden="true"
+  >
+
+    <button
+      class="lightbox-close"
+      id="lightbox-close"
+      type="button"
+      aria-label="Close media viewer"
+    >
+      ×
+    </button>
+
+    <button
+      class="lightbox-arrow lightbox-prev"
+      id="lightbox-prev"
+      type="button"
+      aria-label="Previous media"
+    >
+      ‹
+    </button>
+
+    <div
+      class="lightbox-card"
+      id="lightbox-card"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Archive media"
+    >
+      <div
+        id="lightbox-stage"
+        class="lightbox-stage"
+      ></div>
+
+      <div
+        class="lightbox-caption"
+        id="lightbox-caption"
+      >
+        <a
+          id="lightbox-username"
+          class="lightbox-username"
+          href="mailto:YOUR-EMAIL-HERE@example.com"
+        >
+          @Zaragoza
+        </a>
+
+        <span id="lightbox-caption-text"></span>
+      </div>
+    </div>
+
+    <button
+      class="lightbox-arrow lightbox-next"
+      id="lightbox-next"
+      type="button"
+      aria-label="Next media"
+    >
+      ›
+    </button>
+
+  </div>
+
+
+  <script src="archive-data.js?v=1"></script>
+  <script src="archive.js?v=1"></script>
+
+</body>
+</html>
